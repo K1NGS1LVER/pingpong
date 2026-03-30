@@ -1,122 +1,138 @@
 #include <raylib.h>
-#include <stdio.h>
-// window variables
+
+// Window Configuration
 #define WINDOW_WIDTH 1200
 #define WINDOW_HEIGHT 800
-#define WINDOW_TITILE "Pong Bong"
-#define BOX_TOP 50
-#define BOX_BOTTOM 550
+#define WINDOW_TITLE "Pong Bong"
 
-// box variables
+// Box/Court Configuration
 #define BOX_WIDTH 900
 #define BOX_HEIGHT 500
 
-// game objects
+// Calculated Box Position (centered)
+const int BOX_X = (WINDOW_WIDTH - BOX_WIDTH) / 2;
+const int BOX_Y = (WINDOW_HEIGHT - BOX_HEIGHT) / 2;
+
+// Paddle Configuration
 #define PADDLE_WIDTH 10
 #define PADDLE_HEIGHT 80
-#define CHANGE_RATE 7
+#define PADDLE_SPEED 7
+#define PADDLE_MARGIN 10 // Distance from box edge
+
+// Ball Configuration
 #define BALL_RADIUS 8
+#define BALL_SPEED_X 5
+#define BALL_SPEED_Y 5
+
+// Score Display Configuration
+#define SCORE_FONT_SIZE 20
+#define SCORE_Y_POSITION 10
+#define SCORE_SPACING 150
 
 void draw(int paddleX, int paddleY, int paddle2X, int paddle2Y, float ballX,
           float ballY, int score1, int score2) {
   BeginDrawing();
   ClearBackground(RAYWHITE);
-  DrawRectangle(BOX_TOP, BOX_TOP, BOX_WIDTH, BOX_HEIGHT, BLACK);
 
+  // Draw court
+  DrawRectangle(BOX_X, BOX_Y, BOX_WIDTH, BOX_HEIGHT, BLACK);
+
+  // Draw center line
+  DrawLine(BOX_X + BOX_WIDTH / 2, BOX_Y, BOX_X + BOX_WIDTH / 2,
+           BOX_Y + BOX_HEIGHT, GRAY);
+
+  // Draw paddles
   DrawRectangle(paddleX, paddleY, PADDLE_WIDTH, PADDLE_HEIGHT, BLUE);
   DrawRectangle(paddle2X, paddle2Y, PADDLE_WIDTH, PADDLE_HEIGHT, RED);
 
+  // Draw ball
   DrawCircle(ballX, ballY, BALL_RADIUS, WHITE);
-  DrawText(TextFormat("player 1: %d ", score1), WINDOW_WIDTH / 2 - 50, 10, 20,
-           BLACK);
-  DrawText(TextFormat("player 2: %d", score2), WINDOW_WIDTH / 2 - 50, 30, 20,
-           BLACK);
+
+  // Draw scores (centered above court)
+  DrawText(TextFormat("Player 1: %d", score1), WINDOW_WIDTH / 2 - SCORE_SPACING,
+           SCORE_Y_POSITION, SCORE_FONT_SIZE, BLACK);
+  DrawText(TextFormat("Player 2: %d", score2),
+           WINDOW_WIDTH / 2 + SCORE_SPACING / 2, SCORE_Y_POSITION,
+           SCORE_FONT_SIZE, BLACK);
+
   EndDrawing();
 }
 
 int main() {
-  int paddleX = BOX_TOP + 10;
-  int paddleY = BOX_TOP + ((BOX_HEIGHT - PADDLE_HEIGHT) / 2);
-  int paddle2X = BOX_TOP + BOX_WIDTH - PADDLE_WIDTH - 10;
-  int paddle2Y = BOX_TOP + ((BOX_HEIGHT - PADDLE_HEIGHT) / 2);
-  float ballX = BOX_TOP + static_cast<float>(BOX_WIDTH / 2);
-  float ballY = BOX_TOP + static_cast<float>(BOX_HEIGHT / 2);
-  float ballSpeedX = 5;
-  float ballSpeedY = 5;
+  // Paddle starting positions
+  int paddleX = BOX_X + PADDLE_MARGIN;
+  int paddleY = BOX_Y + (BOX_HEIGHT - PADDLE_HEIGHT) / 2;
+
+  int paddle2X = BOX_X + BOX_WIDTH - PADDLE_WIDTH - PADDLE_MARGIN;
+  int paddle2Y = BOX_Y + (BOX_HEIGHT - PADDLE_HEIGHT) / 2;
+
+  // Ball starting position (center of court)
+  float ballX = BOX_X + static_cast<float>(BOX_WIDTH) / 2;
+  float ballY = BOX_Y + static_cast<float>(BOX_HEIGHT) / 2;
+  float ballSpeedX = BALL_SPEED_X;
+  float ballSpeedY = BALL_SPEED_Y;
+
+  // Scores
   int score1 = 0;
   int score2 = 0;
 
-  InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITILE);
+  InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITLE);
   SetTargetFPS(60);
 
   while (!WindowShouldClose()) {
 
-    // paddle movement player 1
+    // Paddle movement - Player 1 (W/S)
     if (IsKeyDown('S')) {
-      if (paddleY + PADDLE_HEIGHT < BOX_TOP + BOX_HEIGHT)
-        paddleY += CHANGE_RATE; // prevent paddle from moving out of bounds
+      if (paddleY + PADDLE_HEIGHT < BOX_Y + BOX_HEIGHT)
+        paddleY += PADDLE_SPEED;
     }
     if (IsKeyDown('W')) {
-      if (paddleY > BOX_TOP)
-        paddleY -= CHANGE_RATE;
-    };
+      if (paddleY > BOX_Y)
+        paddleY -= PADDLE_SPEED;
+    }
 
-    // movement player 2
+    // Paddle movement - Player 2 (Arrow Keys)
     if (IsKeyDown(KEY_DOWN)) {
-      if (paddle2Y + PADDLE_HEIGHT < BOX_TOP + BOX_HEIGHT)
-        paddle2Y += CHANGE_RATE; // prevent paddle from moving out of bounds
+      if (paddle2Y + PADDLE_HEIGHT < BOX_Y + BOX_HEIGHT)
+        paddle2Y += PADDLE_SPEED;
     }
     if (IsKeyDown(KEY_UP)) {
-      if (paddle2Y > BOX_TOP)
-        paddle2Y -= CHANGE_RATE;
-    };
+      if (paddle2Y > BOX_Y)
+        paddle2Y -= PADDLE_SPEED;
+    }
 
-    // ball movement
+    // Ball movement
     ballX += ballSpeedX;
     ballY += ballSpeedY;
 
-    // coords calculated from the start of the ball
-    // top wall
-    if (ballY - BALL_RADIUS <= BOX_TOP) {
+    // Top wall collision
+    if (ballY - BALL_RADIUS <= BOX_Y) {
       ballSpeedY = -ballSpeedY;
-      ballY = BOX_TOP + BALL_RADIUS;
+      ballY = BOX_Y + BALL_RADIUS;
     }
 
-    // bottom wall
-    if (ballY + BALL_RADIUS >= BOX_TOP + BOX_HEIGHT) {
+    // Bottom wall collision
+    if (ballY + BALL_RADIUS >= BOX_Y + BOX_HEIGHT) {
       ballSpeedY = -ballSpeedY;
-      ballY = BOX_TOP + BOX_HEIGHT - BALL_RADIUS;
+      ballY = BOX_Y + BOX_HEIGHT - BALL_RADIUS;
     }
 
-    // // left wall
-    // if (ballX - BALL_RADIUS <= BOX_TOP) {
-    //   ballSpeedX = -ballSpeedX;
-    //   ballX = BOX_TOP + BALL_RADIUS;
-    // }
-
-    // right wall
-    // if (ballX + BALL_RADIUS >= BOX_TOP + BOX_WIDTH) {
-    //   ballSpeedX = -ballSpeedX;
-    //   ballX = BOX_TOP + BOX_WIDTH - BALL_RADIUS;
-    // }
-
-    // paddle bounce
+    // Paddle 1 collision detection
     bool ballIsInPaddleX = false;
     bool ballIsInPaddleY = false;
-    bool ballIsInPaddle2X = false;
-    bool ballIsInPaddle2Y = false;
 
     if (ballY + BALL_RADIUS >= paddleY &&
         ballY - BALL_RADIUS <= paddleY + PADDLE_HEIGHT) {
       ballIsInPaddleY = true;
     }
-    printf("Ball: left=%f, right=%f | Paddle: left=%d, right=%d\n",
-           ballX - BALL_RADIUS, ballX + BALL_RADIUS, paddleX,
-           paddleX + PADDLE_WIDTH);
     if (ballX + BALL_RADIUS >= paddleX &&
         ballX - BALL_RADIUS <= paddleX + PADDLE_WIDTH) {
       ballIsInPaddleX = true;
     }
+
+    // Paddle 2 collision detection
+    bool ballIsInPaddle2X = false;
+    bool ballIsInPaddle2Y = false;
 
     if (ballY + BALL_RADIUS >= paddle2Y &&
         ballY - BALL_RADIUS <= paddle2Y + PADDLE_HEIGHT) {
@@ -127,6 +143,7 @@ int main() {
       ballIsInPaddle2X = true;
     }
 
+    // Paddle bounces
     if (ballIsInPaddleX && ballIsInPaddleY) {
       ballSpeedX = -ballSpeedX;
       ballX = paddleX + PADDLE_WIDTH + BALL_RADIUS;
@@ -136,21 +153,23 @@ int main() {
       ballX = paddle2X - BALL_RADIUS;
     }
 
-    // scoring
-    // left wall
-    if (ballX - BALL_RADIUS <= BOX_TOP) {
+    // Scoring - Left wall (Player 2 scores)
+    if (ballX - BALL_RADIUS <= BOX_X) {
       score2++;
-      ballX = BOX_TOP + static_cast<float>(BOX_WIDTH / 2);
-      ballY = BOX_TOP + static_cast<float>(BOX_HEIGHT / 2);
+      ballX = BOX_X + static_cast<float>(BOX_WIDTH) / 2;
+      ballY = BOX_Y + static_cast<float>(BOX_HEIGHT) / 2;
     }
-    if (ballX + BALL_RADIUS >= BOX_TOP + BOX_WIDTH) {
+
+    // Scoring - Right wall (Player 1 scores)
+    if (ballX + BALL_RADIUS >= BOX_X + BOX_WIDTH) {
       score1++;
-      ballX = BOX_TOP + static_cast<float>(BOX_WIDTH / 2);
-      ballY = BOX_TOP + static_cast<float>(BOX_HEIGHT / 2);
+      ballX = BOX_X + static_cast<float>(BOX_WIDTH) / 2;
+      ballY = BOX_Y + static_cast<float>(BOX_HEIGHT) / 2;
     }
+
     draw(paddleX, paddleY, paddle2X, paddle2Y, ballX, ballY, score1, score2);
   }
-  CloseWindow();
 
+  CloseWindow();
   return 0;
 }
