@@ -1,0 +1,32 @@
+# Compiled executable
+PingPong
+YourGame
+PongBong
+*.out
+*.exe
+
+# Object files
+*.o
+*.obj
+
+# macOS specific
+.DS_Store
+*.dSYM/
+
+# IDE/Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build directories
+build/
+bin/
+obj/
+
+# Debugging files
+*.log
+
+# Raylib compiled library (if you compiled it yourself)
+libraylib.a
