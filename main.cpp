@@ -18,7 +18,7 @@
 #define BALL_RADIUS 8
 
 void draw(int paddleX, int paddleY, int paddle2X, int paddle2Y, float ballX,
-          float ballY) {
+          float ballY, int score1, int score2) {
   BeginDrawing();
   ClearBackground(RAYWHITE);
   DrawRectangle(BOX_TOP, BOX_TOP, BOX_WIDTH, BOX_HEIGHT, BLACK);
@@ -27,6 +27,10 @@ void draw(int paddleX, int paddleY, int paddle2X, int paddle2Y, float ballX,
   DrawRectangle(paddle2X, paddle2Y, PADDLE_WIDTH, PADDLE_HEIGHT, RED);
 
   DrawCircle(ballX, ballY, BALL_RADIUS, WHITE);
+  DrawText(TextFormat("player 1: %d ", score1), WINDOW_WIDTH / 2 - 50, 10, 20,
+           BLACK);
+  DrawText(TextFormat("player 2: %d", score2), WINDOW_WIDTH / 2 - 50, 30, 20,
+           BLACK);
   EndDrawing();
 }
 
@@ -37,8 +41,10 @@ int main() {
   int paddle2Y = BOX_TOP + ((BOX_HEIGHT - PADDLE_HEIGHT) / 2);
   float ballX = BOX_TOP + static_cast<float>(BOX_WIDTH / 2);
   float ballY = BOX_TOP + static_cast<float>(BOX_HEIGHT / 2);
-  float ballSpeedX = 3;
-  float ballSpeedY = 3;
+  float ballSpeedX = 5;
+  float ballSpeedY = 5;
+  int score1 = 0;
+  int score2 = 0;
 
   InitWindow(WINDOW_WIDTH, WINDOW_HEIGHT, WINDOW_TITILE);
   SetTargetFPS(60);
@@ -130,7 +136,19 @@ int main() {
       ballX = paddle2X - BALL_RADIUS;
     }
 
-    draw(paddleX, paddleY, paddle2X, paddle2Y, ballX, ballY);
+    // scoring
+    // left wall
+    if (ballX - BALL_RADIUS <= BOX_TOP) {
+      score2++;
+      ballX = BOX_TOP + static_cast<float>(BOX_WIDTH / 2);
+      ballY = BOX_TOP + static_cast<float>(BOX_HEIGHT / 2);
+    }
+    if (ballX + BALL_RADIUS >= BOX_TOP + BOX_WIDTH) {
+      score1++;
+      ballX = BOX_TOP + static_cast<float>(BOX_WIDTH / 2);
+      ballY = BOX_TOP + static_cast<float>(BOX_HEIGHT / 2);
+    }
+    draw(paddleX, paddleY, paddle2X, paddle2Y, ballX, ballY, score1, score2);
   }
   CloseWindow();
 
